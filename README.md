@@ -1,6 +1,6 @@
 # Casande
 
-This is the repository containing the codebase of the CASANDE agent as well as the baselines introduced in the paper [Towards Trustworthy Automatic Diagnosis Systems by Emulating Doctors' Reasoning with Deep Reinforcement Learning](https://arxiv.org/abs/2210.07198) published at NeurIPS 2022.
+This is the edited repository forked from the codebase of the CASANDE agent as well as the baselines introduced in the paper [Towards Trustworthy Automatic Diagnosis Systems by Emulating Doctors' Reasoning with Deep Reinforcement Learning](https://arxiv.org/abs/2210.07198) published at NeurIPS 2022.
 
 ## Introduction
 
