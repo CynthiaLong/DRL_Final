@@ -3,6 +3,7 @@
 import argparse
 import os
 import time
+import pdb
 
 import mlflow
 import torch
@@ -365,6 +366,7 @@ def main():
 
     start_run(hyper_params)
 
+    # pdb.set_trace() # change
     run(args, hyper_params)
 
     mlflow.end_run()

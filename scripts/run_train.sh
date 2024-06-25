@@ -62,5 +62,4 @@ then
         validation_data="$9"
 fi
 
-poetry run python ./chloe/main_rl.py  --data "$data_base/$data" --eval_data "$data_base/$eval_data" --end_training_eval_data "$data_base/$validation_data" --output "$output_base/$output$prefix" --config "$config_base/$config" --cuda_idx $cuda_idx --n_workers $workers --shared_data_socket "$plasma"  --no_replace_if_present
-
+poetry run python ./chloe/main_rl.py  --data "$data_base/$data" --eval_data "$data_base/$eval_data" --end_training_eval_data "$data_base/$validation_data" --output "$output_base/$output$prefix" --config "$config_base/$config" --cuda_idx $cuda_idx --n_workers $workers --shared_data_socket "$plasma"  --no_replace_if_present  --ignore_existing_conf

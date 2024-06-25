@@ -4,6 +4,7 @@ import json
 import os
 import os.path as osp
 import pprint
+import pdb
 
 import numpy as np
 import orion.client.cli as cli
@@ -444,6 +445,7 @@ def train(runner):
     """
     try:
         try:
+            # pdb.set_trace()
             runner.train()
         except EarlyStoppingError:
             # this is not an error. It is just an exception informing us
