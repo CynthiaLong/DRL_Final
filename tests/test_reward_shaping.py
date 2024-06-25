@@ -6,6 +6,7 @@ from numpy.testing import assert_array_almost_equal
 from chloe.utils.clf_loss_utils import (
     cross_entropy_loss,
     sigmoid_modulated_cross_entropy_and_entropy_loss,
+    sigmoid_modulated_cross_entropy_and_entropy_loss_focal,
     sigmoid_modulated_cross_entropy_and_entropy_neg_reward,
 )
 from chloe.utils.reward_shaping_utils import (
@@ -249,6 +250,28 @@ class TestRewardShapingUtils(object):
 
         # Verify
         assert_array_almost_equal(output, computed_output, decimal=3)
+
+    def test_sigmoid_modulated_cross_entropy_and_entropy_loss_focal(self):
+        # Setup
+        output = np.array([0.965, 5.535, 2.303, 2.158])
+
+        # Compute
+        computed_output, _ = sigmoid_modulated_cross_entropy_and_entropy_loss_focal(
+            self.next_values,
+            self.target_pathos,
+            None,
+            None,
+            None,
+            reduction="none",
+            severity=self.severity,
+            timestep=self.timestep,
+            **self.clf_schedule_params,
+        )
+        computed_output = computed_output.cpu().numpy().flatten()
+
+        # Verify
+        assert_array_almost_equal(output, computed_output, decimal=3)
+
 
     def test_sigmoid_modulated_cross_entropy_and_entropy_neg_reward(self):
         # Setup

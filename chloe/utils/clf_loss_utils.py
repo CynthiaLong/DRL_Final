@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from rlpyt.utils.logging import logger
+from chloe.utils.focalloss import FocalLoss
+import pdb
 
 from chloe.utils.scheduler_utils import sigmoid_scheduler
 from chloe.utils.tensor_utils import (
@@ -175,6 +177,118 @@ def sigmoid_modulated_cross_entropy_and_entropy_loss(
 
     return loss, log_dict
 
+def sigmoid_modulated_cross_entropy_and_entropy_loss_focal(
+    pred,
+    target,
+    differential_indices,
+    differential_probas,
+    weight=None,
+    reduction="mean",
+    severity=None,
+    timestep=None,
+    ent_weight=0.0,
+    alpha=50.0,
+    use_severity_as_weight=False,
+    **kwargs,
+):
+    """A sigmoid modulated [cross entropy + entropy] loss with generic inputs.
+
+    Parameters
+    ----------
+    pred: tensor
+        the predicted tensor.
+    target: tensor
+        the target tensor.
+    differential_indices: tensor
+        indices of the pathologies involved in the differential.
+    differential_probas: tensor
+        probabilities associated to the pathologies involved in the differential.
+    weight: tensor
+        a manual rescaling weight given to each class. Default: None.
+    reduction: str
+        Specifies the reduction to apply to the output: 'none' | 'mean' | 'sum'.
+        Default: 'mean'
+    severity: tensor
+        the severity associated to each class. It is a 1-D tensor of size num_class.
+        Default: None
+    timestep: tensor
+        the time step (within the interaction session) associated to each element
+        of the batch. Default: None
+    ent_weight: float
+        the weight of the entropy component. Default: 0.0
+    alpha: float
+        Skew parameter to shift the schedule for the sigmoid scheduler. Default: 50
+    use_severity_as_weight: bool
+        flag indicating whether or not the (inverse of the) pathology severity should
+        be used as class weights when computing cross-entropy loss. Default: False
+    max_turns: int
+        the maximum number of steps allowed within an interaction session. Default: 30
+    min_turns: int
+        the minimum number of steps allowed within an interaction session. Default: 0
+    min_map_val: float
+        the minimum x value considered from the sigmoid function. Default: -10
+    max_map_val: float
+        the maxmum x value considered from the sigmoid function. Default: 10
+
+    Return
+    ------
+    result: tensor
+        the computed loss.
+    log_data: dict
+        dictionnary containing sub-component data to be logged.
+
+    """
+    log_dict = {}
+
+    sig_weight = sigmoid_scheduler(timestep, alpha=alpha, **kwargs)
+    entropy = (
+        0.0
+        if ent_weight == 0.0
+        else -(F.softmax(pred, dim=1) * F.log_softmax(pred, dim=1)).sum(dim=1)
+    )
+    if (weight is None) and (severity is not None) and use_severity_as_weight:
+        severity = severity.float()
+        weight = 1.0 / (severity - severity.min() + 1)
+
+    is_soft = (differential_indices is not None) and (differential_probas is not None)
+    if is_soft:
+        # cross_entropy = soft_cross_entropy(
+        #     pred,
+        #     differential_indices,
+        #     differential_probas,
+        #     weight=weight,
+        #     reduction="none",
+        # )
+
+        # torch.Size([49])
+        cross_entropy = FocalLoss(gamma=2)(pred,target)
+    else:
+        cross_entropy = F.cross_entropy(pred, target, weight=weight, reduction="none")
+    pdb.set_trace()  # change
+
+    weighted_entropy = ent_weight * entropy
+    modulated_weighted_entropy = sig_weight * weighted_entropy
+    modulated_cross_entropy = sig_weight * cross_entropy
+
+    if ent_weight != 0:
+        log_dict["Entropy"] = weighted_entropy
+        log_dict["ModulatedEntropy"] = modulated_weighted_entropy
+    log_dict["CrossEntropy"] = cross_entropy
+    log_dict["ModulatedCrossEntropy"] = modulated_cross_entropy
+
+    loss = modulated_weighted_entropy + modulated_cross_entropy
+    if reduction == "mean":
+        loss = loss.mean()
+        for k in log_dict.keys():
+            log_dict[k] = log_dict[k].mean()
+    elif reduction == "sum":
+        loss = loss.sum()
+        for k in log_dict.keys():
+            log_dict[k] = log_dict[k].sum()
+    
+    # print("found sigmoid_modulated_cross_entropy_and_entropy_loss_focal") # change
+
+    return loss, log_dict
 
 def sigmoid_modulated_cross_entropy_and_entropy_neg_reward(
     pred,
@@ -492,16 +606,19 @@ class ClassifierLossFactory:
         - cross_entropy
         - sigmoid_modulated_cross_entropy_and_entropy_loss
         - sigmoid_modulated_cross_entropy_and_entropy_neg_reward
+        - sigmoid_modulated_cross_entropy_and_entropy_loss_focal
 
     """
 
     def __init__(self):
         k1 = "sigmoid_modulated_cross_entropy_and_entropy_loss"
         k2 = "sigmoid_modulated_cross_entropy_and_entropy_neg_reward"
+        k3 = "sigmoid_modulated_cross_entropy_and_entropy_loss_focal"
         self._builders = {
             "cross_entropy": cross_entropy_loss,
             k1: sigmoid_modulated_cross_entropy_and_entropy_loss,
             k2: sigmoid_modulated_cross_entropy_and_entropy_neg_reward,
+            k3: sigmoid_modulated_cross_entropy_and_entropy_loss_focal,
         }
 
     def register_builder(self, key, builder, force_replace=False):

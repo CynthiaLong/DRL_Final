@@ -10,7 +10,7 @@ algo_params:
   clf_learning_rate: null
   clf_loss_complete_data_flag: false
   clf_loss_flag: true
-  clf_loss_func: sigmoid_modulated_cross_entropy_and_entropy_loss
+  clf_loss_func: sigmoid_modulated_cross_entropy_and_entropy_loss_focal
   clf_loss_kwargs:
     alpha: 50
     ent_weight: 0.0
@@ -127,7 +127,7 @@ architecture_params:
   - 512
   use_stop_action: true
   use_turn_just_for_masking: false
-config_uid: 0910b2277dc74b8d87e124c89ede158c
+config_uid: cf6152eb5a894ecd934a4f7ea8738699
 eval_max_steps: 4000
 eval_max_trajectories: 100
 eval_metrics:
@@ -139,10 +139,10 @@ eval_metrics:
 - top-5-accuracy
 eval_n_envs: 0
 exp_name: MainResultConfig
-experiment_folder: ./output/config1/MainResultConfig/0910b2277dc74b8d87e124c89ede158c
+experiment_folder: ./output/config1/MainResultConfig/cf6152eb5a894ecd934a4f7ea8738699
 log_interval_steps: 200000
 max_decorrelation_steps: 400
-mlflow_uid: 0910b2277dc74b8d87e124c89ede158c
+mlflow_uid: cf6152eb5a894ecd934a4f7ea8738699
 n_envs: 16
 n_steps: 100000000
 optimizer: adam

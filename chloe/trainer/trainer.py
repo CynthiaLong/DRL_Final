@@ -568,4 +568,3 @@ def build_and_train(gym_env_id, args, run_ID=0, params=None):
         pretrain_on_the_fly(gym_env_id, algo_params, runner.agent, params, args)
 
         train(runner)
-        # pdb.set_trace()

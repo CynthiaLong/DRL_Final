@@ -445,7 +445,6 @@ def train(runner):
     """
     try:
         try:
-            # pdb.set_trace()
             runner.train()
         except EarlyStoppingError:
             # this is not an error. It is just an exception informing us

@@ -379,3 +379,4 @@ def soft_cross_entropy(
         result = result.mean() if weight is None else result.sum() / avg_weight.sum()
 
     return result
+
